@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valentine Quiz</title>
+  <!-- Google Fonts for a pixelated envelope and a handwritten style -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
+    /* General styles */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .full-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    /* Envelope styling */
+    #envelope-container .envelope {
+      position: relative;
+      width: 300px;
+      height: 200px;
+      background: #fff;
+      border: 4px solid #000;
+      border-radius: 5px;
+      font-family: 'Press Start 2P', cursive;
+      text-align: center;
+      padding-top: 60px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    #envelope-container .envelope::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      background: #ddd;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+    #envelope-container .envelope .to {
+      margin: 0;
+      font-size: 16px;
+    }
+    #envelope-container .envelope button {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    /* Quiz box styling */
+    .box {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .box h2, .box h1 {
+      margin-bottom: 20px;
+    }
+    .box button {
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 1em;
+      margin: 5px;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .box button:hover {
+      transform: scale(1.05);
+    }
+    /* Final page button colors */
+    #final-container #yes-btn {
+      background-color: #4caf50;
+    }
+    #final-container #no-btn {
+      background-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <!-- Envelope Page -->
+  <div id="envelope-container" class="full-page">
+    <div class="envelope">
+      <p class="to">To: Kaya</p>
+      <button onclick="openEnvelope()">Open</button>
+    </div>
+  </div>
+
+  <!-- Quiz Container -->
+  <div id="quiz-container" class="full-page" style="display: none;">
+    <div class="box" id="quiz-box">
+      <h2 id="question-text"></h2>
+      <div id="options-container"></div>
+    </div>
+  </div>
+
+  <!-- Buildup Page Before Final -->
+  <div id="buildup-container" class="full-page" style="display: none;">
+    <div class="box">
+      <h2>Now for the final question...</h2>
+      <button onclick="showFinalPage()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Final Valentine Prompt Page -->
+  <div id="final-container" class="full-page" style="display: none;">
+    <div class="box">
+      <h1>Will you be my valentine?</h1>
+      <button id="yes-btn" onclick="acceptValentine()">Yes</button>
+      <button id="no-btn" onclick="redirectToYes()"
+              onmouseover="this.innerHTML='Yes'; this.style.backgroundColor='#4caf50';"
+              onmouseout="this.innerHTML='No'; this.style.backgroundColor='#f44336';">No</button>
+    </div>
+  </div>
+
+  <script>
+    // Array of quiz questions – each with options, correct answer, and background color.
+    var questions = [
+      {
+        question: "Who did we run into first at Barnes and Nobles?",
+        options: ["Owen", "Mrs. Jaballa", "Ms. C", "Mr. Nichols"],
+        correct: "Owen",
+        background: "#FFCDD2"
+      },
+      {
+        question: "What flavor of shake did I order from in N out?",
+        options: ["chocolate", "strawberry", "vanilla", "peach"],
+        correct: "vanilla",
+        background: "#F8BBD0"
+      },
+      {
+        question: "What lego flower did we first build?",
+        options: ["dandelions", "orchids", "daffodils", "roses"],
+        correct: "daffodils",
+        background: "#E1BEE7"
+      },
+      {
+        question: "What day was our first kiss?",
+        options: ["February 11", "February 16", "February 18", "February 24"],
+        correct: "February 18",
+        background: "#D1C4E9"
+      },
+      {
+        question: "Who was NOT included in our picture at the first bonfire?",
+        options: ["Sachin", "James", "Jake", "Benny"],
+        correct: "James",
+        background: "#C5CAE9"
+      },
+      {
+        question: "Did I like Bob Marley?",
+        options: ["Yes", "No"],
+        correct: "No",
+        background: "#BBDEFB"
+      },
+      {
+        question: "What shirt was I wearing on day 1?",
+        options: ["Vans navy shirt", "Vans Skateboard shirt", "Purple hoodie", "X-men shirt"],
+        correct: "Vans Skateboard shirt",
+        background: "#B3E5FC"
+      },
+      {
+        question: "How did I respond when you wished me happy birthday (2024)?",
+        options: ["thank you thank you", "thank you", "thank youuu", "thank you thank youuu"],
+        correct: "thank you thank youuu",
+        background: "#B2EBF2"
+      },
+      {
+        question: "Who has survived our double date curse?",
+        options: ["Jack and Savannah", "Sachin and Taryn", "Sam and Harrison", "Harper and Remi"],
+        correct: "Sam and Harrison",
+        background: "#B2DFDB"
+      },
+      {
+        question: "What establishment did we go to for our 2-month?",
+        options: ["Shawarma Press", "Rokhat Grill", "Mango Mango", "Both B and C"],
+        correct: "Both B and C",
+        background: "#C8E6C9"
+      },
+      {
+        question: "Which of your nails would I rank the highest?",
+        options: ["Prom", "Chrome Red", "Graduation", "Deca"],
+        correct: "Chrome Red",
+        background: "#DCEDC8"
+      },
+      {
+        question: "What was our last activity together before long distance?",
+        options: ["Circus", "Water Lanterns", "Vampire Weekend", "Hike"],
+        correct: "Hike",
+        background: "#F0F4C3"
+      },
+      {
+        question: "Where did the drought end?",
+        options: ["Hammocks", "Frontier Parking lot", "Tarps", "House"],
+        correct: "Frontier Parking lot",
+        background: "#FFF9C4"
+      },
+      {
+        question: "What was the Talenti flavor?",
+        options: ["salted caramel truffle", "Caramel cookie crunch", "cookies and cream", "straweberry"],
+        correct: "salted caramel truffle",
+        background: "#FFECB3"
+      },
+      {
+        question: "What color Benny do I have?",
+        options: ["black and white", "purple and yellow", "pink and blue", "purple and blue"],
+        correct: "purple and blue",
+        background: "#FFE0B2"
+      },
+      {
+        question: "Which of these days did I NOT cry?",
+        options: ["water lantern", "graduation", "kroger parking lot", "talking about long distance"],
+        correct: "graduation",
+        background: "#FFCCBC"
+      },
+      {
+        question: "What question did I ask you on the bus?",
+        options: ["Who is your best friend?", "What is your favorite song?", "What is your favorite color?", "What is your favorite food?"],
+        correct: "What is your favorite color?",
+        background: "#D7CCC8"
+      },
+      {
+        question: "Which did you introduce to me first?",
+        options: ["Jeremiah’s", "Handel’s", "NomNoms", "Bread Zeppelin"],
+        correct: "Handel’s",
+        background: "#B0BEC5"
+      },
+      {
+        question: "What song do you associate us with?",
+        options: ["This Town by Niall Horan", "Be Sweet by Japanese Breakfast", "End of Beginning by Djo", "Campus by Vampire Weekend"],
+        correct: "End of Beginning by Djo",
+        background: "#CFD8DC"
+      },
+      {
+        question: "Where was our first picture together? (Just you and I)",
+        options: ["Deca districts", "Tarp night", "Deca State", "First bonfire"],
+        correct: "Deca State",
+        background: "#ECEFF1"
+      }
+    ];
+
+    var currentQuestionIndex = 0;
+    var currentAttempt = 0;
+
+    // When the envelope is opened, hide it and start the quiz.
+    function openEnvelope() {
+      document.getElementById("envelope-container").style.display = "none";
+      showQuestion(0);
+    }
+
+    // Display the current question, its options, and set the page background.
+    function showQuestion(index) {
+      currentQuestionIndex = index;
+      currentAttempt = 0;
+      var currentQuestion = questions[index];
+
+      document.getElementById("quiz-container").style.display = "flex";
+      // Set the background for this question.
+      document.body.style.background = currentQuestion.background;
+      document.getElementById("question-text").innerText = currentQuestion.question;
+      
+      var optionsContainer = document.getElementById("options-container");
+      optionsContainer.innerHTML = ""; // Clear previous options.
+      
+      currentQuestion.options.forEach(function(option) {
+        var btn = document.createElement("button");
+        btn.innerText = option;
+        btn.onclick = function() {
+          checkAnswer(option);
+        };
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    // Check if the selected answer is correct.
+    // Only prompt if the answer is wrong.
+    function checkAnswer(selected) {
+      var currentQuestion = questions[currentQuestionIndex];
+      if (selected === currentQuestion.correct) {
+        // Move on to the next question without a prompt.
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          showQuestion(currentQuestionIndex);
+        } else {
+          // Instead of immediately showing the final page, show the buildup page.
+          showBuildupPage();
+        }
+      } else {
+        currentAttempt++;
+        if (currentAttempt < 3) {
+          alert("Incorrect, please try again.");
+        } else {
+          alert("The correct answer is: " + currentQuestion.correct + ". Please select it to continue.");
+          // Disable all buttons except the one with the correct answer.
+          var buttons = document.querySelectorAll("#options-container button");
+          buttons.forEach(function(btn) {
+            if (btn.innerText !== currentQuestion.correct) {
+              btn.disabled = true;
+            }
+          });
+        }
+      }
+    }
+
+    // Show the buildup page before the final Valentine prompt.
+    function showBuildupPage() {
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("buildup-container").style.display = "flex";
+      // Optionally, set a neutral background for the buildup page.
+      document.body.style.background = "#ECEFF1";
+    }
+
+    // After buildup, show the final Valentine prompt.
+    function showFinalPage() {
+      document.getElementById("buildup-container").style.display = "none";
+      document.getElementById("final-container").style.display = "flex";
+      // Reset to the original background image.
+      document.body.style.background = "url('finalbackground.jpg') no-repeat center center fixed";
+      document.body.style.backgroundSize = "cover";
+    }
+
+    // Final page actions.
+    function acceptValentine() {
+      alert("LETS GOOOO! I love you Kaya.");
+    }
+    function redirectToYes() {
+      alert("Nice try! Redirecting to a yes...");
+      acceptValentine();
+    }
+  </script>
+</body>
+</html>
